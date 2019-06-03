@@ -42,4 +42,10 @@ sls deploy
 sls remove
 ```
 
-Note: when using `DeletionPolicy: Retain` on db tables as on this case, after remove, we need to clean up tables also, otherwise we would see an error when trying to deploy again.
+### Logs
+
+```bash
+  sls logs --function functionName
+```
+
+Note: when using `DeletionPolicy: Retain` on the db tables as on this case, after remove, we need to clean up tables also. Otherwise we would see an error when trying to deploy again.
