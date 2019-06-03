@@ -1,4 +1,4 @@
-# Demo Serverless
+# Demo Serverless (REST API)
 
 ## Get started
 
@@ -26,8 +26,19 @@
 
 ```yml
 dev:
-  PROFILE: user-name
+  PROFILE: demo-serverless
   DYNAMODB_LOCAL_PORT: 9200
+  JWT_SECRET: jwt_secret
+  CRYPTO_SECRET_KEY: crypto_secret_key
+```
+
+### Generate secret using Node.js Crypto
+
+```javascript
+require('crypto').randomBytes(20, function(err, buffer) {
+  var token = buffer.toString('hex')
+  console.log(token)
+})
 ```
 
 ### Deploy
@@ -42,10 +53,24 @@ sls deploy
 sls remove
 ```
 
+Note: when using `DeletionPolicy: Retain` on the db tables as on this case, after remove, we need to clean up the tables also. Otherwise we would see an error when trying to deploy again.
+
 ### Logs
 
 ```bash
   sls logs --function functionName
 ```
 
-Note: when using `DeletionPolicy: Retain` on the db tables as on this case, after remove, we need to clean up tables also. Otherwise we would see an error when trying to deploy again.
+## Local environment configuration
+
+```bash
+sls dynamodb install
+```
+
+```bash
+sls offline
+```
+
+## Postman collection
+
+https://www.getpostman.com/collections/61f4f550292769ccc83a

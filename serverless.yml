@@ -9,6 +9,9 @@ provider:
   environment:
     USERS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-users
     DYNAMODB_LOCAL_PORT: ${file(./config.yml):${opt:stage, self:provider.stage}.DYNAMODB_LOCAL_PORT}
+    JWT_SECRET: ${file(./config.yml):${opt:stage, self:provider.stage}.JWT_SECRET}
+    CRYPTO_SECRET_KEY: ${file(./config.yml):${opt:stage, self:provider.stage}.CRYPTO_SECRET_KEY}
+    JWT_EXPIRATION_TIME: 5m
   iamRoleStatements:
     - Effect: Allow
       Resource: '*'
@@ -44,6 +47,17 @@ custom:
             sources: [./offline/migrations/users.json]
 
 functions:
+  authorize:
+    handler: lambda/functions/authorize.authorize
+
+  authenticate:
+    handler: lambda/functions/authenticate.authenticate
+    events:
+      - http:
+          path: authenticate
+          method: post
+          cors: true
+
   app:
     handler: lambda/functions/app.handler
     events:
@@ -58,6 +72,7 @@ functions:
           path: users
           method: get
           cors: true
+          authorizer: authorize
 
   get-user:
     handler: lambda/functions/users.get
@@ -66,6 +81,7 @@ functions:
           path: users/{username}
           method: get
           cors: true
+          authorizer: authorize
 
   create-user:
     handler: lambda/functions/users.create
@@ -82,14 +98,7 @@ functions:
           path: users
           method: put
           cors: true
-
-  delete-user:
-    handler: lambda/functions/users.delete
-    events:
-      - http:
-          path: users/{username}
-          method: delete
-          cors: true
+          authorizer: authorize
 
 resources:
   Resources:
