@@ -1,0 +1,109 @@
+# serverless.yml
+
+service: demo-serverless
+
+provider:
+  name: aws
+  profile: ${file(./config.yml):${opt:stage, self:provider.stage}.PROFILE}
+  runtime: nodejs8.10
+  environment:
+    USERS_TABLE: ${self:service}-${opt:stage, self:provider.stage}-users
+    DYNAMODB_LOCAL_PORT: ${file(./config.yml):${opt:stage, self:provider.stage}.DYNAMODB_LOCAL_PORT}
+  iamRoleStatements:
+    - Effect: Allow
+      Resource: '*'
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:BatchGetItem
+
+package:
+  exclude:
+    - node_modules/serverless-dynamodb-local/**
+    - .dynamodb/**
+    - offline/**
+
+plugins:
+  - serverless-dynamodb-local
+  - serverless-offline # serverless-offline needs to be last in the list
+
+custom:
+  dynamodb:
+    start:
+      port: ${self:provider.environment.DYNAMODB_LOCAL_PORT}
+      migrate: true
+      seed: true
+    seed:
+      domain:
+        sources:
+          - table: ${self:provider.environment.USERS_TABLE}
+            sources: [./offline/migrations/users.json]
+
+functions:
+  app:
+    handler: lambda/functions/app.handler
+    events:
+      - http:
+          path: app
+          method: get
+
+  all-users:
+    handler: lambda/functions/users.all
+    events:
+      - http:
+          path: users
+          method: get
+          cors: true
+
+  get-user:
+    handler: lambda/functions/users.get
+    events:
+      - http:
+          path: users/{username}
+          method: get
+          cors: true
+
+  create-user:
+    handler: lambda/functions/users.create
+    events:
+      - http:
+          path: users
+          method: post
+          cors: true
+
+  edit-user:
+    handler: lambda/functions/users.update
+    events:
+      - http:
+          path: users
+          method: put
+          cors: true
+
+  delete-user:
+    handler: lambda/functions/users.delete
+    events:
+      - http:
+          path: users/{username}
+          method: delete
+          cors: true
+
+resources:
+  Resources:
+    UsersTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+        KeySchema:
+          - AttributeName: username
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.USERS_TABLE}
