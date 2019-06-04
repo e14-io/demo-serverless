@@ -12,6 +12,7 @@ provider:
     JWT_SECRET: ${file(./config.yml):${opt:stage, self:provider.stage}.JWT_SECRET}
     CRYPTO_SECRET_KEY: ${file(./config.yml):${opt:stage, self:provider.stage}.CRYPTO_SECRET_KEY}
     JWT_EXPIRATION_TIME: 5m
+    ARN: arn:aws:sns:us-east-1:947311568424
   iamRoleStatements:
     - Effect: Allow
       Resource: '*'
@@ -23,6 +24,10 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
         - dynamodb:BatchGetItem
+    - Effect: 'Allow'
+      Resource: '*'
+      Action:
+        - 'sns:*'
 
 package:
   exclude:
@@ -57,6 +62,11 @@ functions:
           path: authenticate
           method: post
           cors: true
+
+  new-user:
+    handler: lambda/functions/new-user.handler
+    events:
+      - sns: new-user
 
   app:
     handler: lambda/functions/app.handler

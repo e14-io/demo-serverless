@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 const Users = require('../db/Users')
 const { encrypt } = require('../helpers/crypto')
 const { generateResponse, generateError } = require('../helpers/requests')
+const { publishSnsTopic } = require('../helpers/sns')
 
 module.exports.create = async event => {
   const params = JSON.parse(event.body)
@@ -31,6 +32,9 @@ module.exports.create = async event => {
       email,
       password: encrypt(password)
     })
+
+    // publish sns topic
+    await publishSnsTopic({ username, email })
     return generateResponse(200, { message: 'Success' })
   } catch (err) {
     return generateError(500, new Error('Internal error'))
