@@ -68,6 +68,10 @@ sls dynamodb install
 ```
 
 ```bash
+sls dynamodb start
+```
+
+```bash
 sls offline
 ```
 
