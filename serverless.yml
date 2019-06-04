@@ -12,7 +12,7 @@ provider:
     JWT_SECRET: ${file(./config.yml):${opt:stage, self:provider.stage}.JWT_SECRET}
     CRYPTO_SECRET_KEY: ${file(./config.yml):${opt:stage, self:provider.stage}.CRYPTO_SECRET_KEY}
     JWT_EXPIRATION_TIME: 5m
-    ARN: arn:aws:sns:us-east-1:947311568424
+    ARN: arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}
   iamRoleStatements:
     - Effect: Allow
       Resource: '*'
@@ -36,6 +36,7 @@ package:
     - offline/**
 
 plugins:
+  - serverless-pseudo-parameters
   - serverless-dynamodb-local
   - serverless-offline # serverless-offline needs to be last in the list
 
