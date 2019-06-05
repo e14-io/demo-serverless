@@ -20,24 +20,31 @@
 - Add name and enable programmatic access
 - Link permissions to the previously created policy
 - Download the credentials csv
-- Edit credentials file (`vim .aws/credentials`)
+
+### Setup Credentials
+
+```bash
+sls config credentials --provider aws --key key --secret secret --profile profile
+```
 
 ### Create config.yml
 
 ```yml
 dev:
-  PROFILE: demo-serverless
   DYNAMODB_LOCAL_PORT: 9200
-  JWT_SECRET: jwt_secret
-  CRYPTO_SECRET_KEY: crypto_secret_key
+  CRYPTO_SECRET_KEY: CRYPTO_SECRET_KEY
+  JWT_SECRET: JWT_SECRET
+  PROFILE: PROFILE
 ```
 
 ### Generate secret using Node.js Crypto
 
 ```javascript
-require('crypto').randomBytes(20, function(err, buffer) {
-  var token = buffer.toString('hex')
-  console.log(token)
+require('crypto').randomBytes(20, (err, buffer) => {
+  if (!err) {
+    const token = buffer.toString('hex')
+    console.log(token)
+  }
 })
 ```
 
